@@ -3,28 +3,34 @@ import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import "./Table.css";
 import NewTask from "./NewTask";
+import { LayoutList } from "lucide-react";
 
 const Table = () => {
   const tableRef = useRef(null);
-  const [tableData, setTableData] = useState([]);
+  const [tableData, setTableData] = useState([]); // initial
+  const [filteredData, setFilteredData] = useState([]); // filtered data
   const [showPopup, setShowPopup] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("All"); // Status filter
 
-  // Fetch initial data for the table
+  // Fetch
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("https://jsonplaceholder.typicode.com/todos");
+        const response = await fetch(
+          "https://jsonplaceholder.typicode.com/todos?_limit=20"
+        );
         const todos = await response.json();
-
+        console.log(todos);
         // Mapping
         const enhancedData = todos.map((task) => ({
           taskId: task.id,
           title: task.title,
-          description: `Description for Task ${task.id}`, 
-          status: "To Do", 
+          description: `Description for Task ${task.id}`,
+          status: task.completed ? "Done" : "To Do",
         }));
 
         setTableData(enhancedData);
+        setFilteredData(enhancedData);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -35,13 +41,19 @@ const Table = () => {
 
   // Initialize Tabulator
   useEffect(() => {
-    if (tableData.length > 0) {
+    if (filteredData.length > 0) {
       const table = new Tabulator(tableRef.current, {
-        data: tableData,
+        data: filteredData,
         height: "400px",
         layout: "fitColumns",
         columns: [
-          { title: "Task ID", field: "taskId", headerHozAlign: "center", hozAlign: "center", width: 90 },
+          {
+            title: "Task ID",
+            field: "taskId",
+            headerHozAlign: "center",
+            hozAlign: "center",
+            width: 90,
+          },
           {
             title: "Title",
             field: "title",
@@ -52,7 +64,7 @@ const Table = () => {
             title: "Description",
             field: "description",
             headerHozAlign: "center",
-            width:600,
+            width: 600,
             editor: "textarea", // editable
           },
           {
@@ -69,13 +81,15 @@ const Table = () => {
           {
             title: "Actions",
             headerHozAlign: "center",
-            formatter: "buttonCross", 
+            formatter: "buttonCross",
             width: 100,
             hozAlign: "center",
             cellClick: (e, cell) => {
-              // Remove task 
+              // Remove task
               const taskIdToDelete = cell.getRow().getData().taskId;
-              setTableData((prevData) => prevData.filter((task) => task.taskId !== taskIdToDelete));
+              setTableData((prevData) =>
+                prevData.filter((task) => task.taskId !== taskIdToDelete)
+              );
             },
           },
         ],
@@ -85,23 +99,97 @@ const Table = () => {
         },
       });
 
-      return () => table.destroy(); 
+      return () => table.destroy();
     }
-  }, [tableData]);
+  }, [filteredData]);
 
   // Add a new task
   const addNewTask = (newTask) => {
-    setTableData((prevData) => [...prevData, newTask]);
+    setFilteredData((prevData) => [...prevData, newTask]);
     setShowPopup(false);
   };
 
+  // Handle filter
+  const handleStatusFilterChange = (event) => {
+    const selectedStatus = event.target.value;
+    setStatusFilter(selectedStatus);
+
+    // Filter table other cases vs all
+    if (selectedStatus === "All") {
+      setFilteredData(tableData);
+    } else {
+      const filtered = tableData.filter(
+        (task) => task.status === selectedStatus
+      );
+      setFilteredData(filtered);
+    }
+  };
+
+  // Counts
+  const getStatusCount = (status) => {
+    return tableData.filter((task) => task.status === status).length;
+  };
 
   return (
     <div className="flex flex-col items-center justify-center w-full p-4 bg-white shadow rounded-lg">
       {/*  Header */}
       <div className="flex justify-between items-center w-full">
-      <h2 className="text-lg font-bold mb-4 text-center">Todos Table</h2>
-      <button onClick={() => setShowPopup(true)} className="px-2 py-1 rounded-lg bg-blue-600 text-white">New Task</button>
+        <h2 className="text-lg font-bold mb-4 text-center">Todos Table</h2>
+        <div className="flex gap-4">
+          <div className="flex space-x-4">
+            <button className="flex gap-2 text-center items-center bg-white text-black text-sm font-normal px-3 py-2 rounded-[100px] border border-stone-300">
+              <span>
+                <LayoutList size={18} />
+              </span>
+              TO DO
+              <span className="px-1 py-0.5 rounded-[100px] bg-neutral-200 text-black text-xs font-medium">
+              {getStatusCount("To Do")}
+              </span>
+            </button>
+            <button className="flex gap-2 text-center items-center bg-white text-black text-sm font-normal px-3 py-2 rounded-[100px] border border-stone-300">
+              <span>
+                <LayoutList size={18} />
+              </span>
+              In Progress
+              <span className="px-1 py-0.5 rounded-[100px] bg-neutral-200 text-black text-xs font-medium">
+                {getStatusCount("In Progress")}
+              </span>
+            </button>
+            <button className="flex gap-2 text-center items-center bg-white text-black text-sm font-normal px-3 py-2 rounded-[100px] border border-stone-300">
+              <span>
+                <LayoutList size={18} />
+              </span>
+              Done
+              <span className="px-1 py-0.5 rounded-[100px] bg-neutral-200 text-black text-xs font-medium">
+                {getStatusCount("Done")}
+              </span>
+            </button>
+          </div>
+          <select
+            value={statusFilter}
+            onChange={handleStatusFilterChange}
+            className="p-2 border border-stone-300 bg-white text-black text-xs font-normal rounded-[100px] ml-2"
+          >
+            <option value="All" className="bg-white rounded-2xl">
+              All
+            </option>
+            <option value="To Do" className="bg-white rounded-2xl">
+              To Do
+            </option>
+            <option value="In Progress" className="bg-white rounded-2xl">
+              In Progress
+            </option>
+            <option value="Done" className="bg-white rounded-2xl">
+              Done
+            </option>
+          </select>
+          <button
+            onClick={() => setShowPopup(true)}
+            className="px-2 py-1 rounded-lg bg-blue-600 text-white"
+          >
+            New Task
+          </button>
+        </div>
       </div>
       {/* main Container */}
       <div
@@ -110,7 +198,13 @@ const Table = () => {
         style={{ maxHeight: "400px" }}
       ></div>
 
-      {showPopup && <NewTask onClose={() => setShowPopup(false)} onSubmit={addNewTask} />}
+      {showPopup && (
+        <NewTask
+          onClose={() => setShowPopup(false)}
+          onSubmit={addNewTask}
+          existingTasks={tableData}
+        />
+      )}
     </div>
   );
 };

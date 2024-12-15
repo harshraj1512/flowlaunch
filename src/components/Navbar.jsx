@@ -26,7 +26,7 @@ const Navbar = () => {
       >
         <div className="navbar bg-white">
           <div className="flex-1">
-            <a className="btn btn-ghost text-xl">Flowlaunch</a>
+            <a className="btn btn-ghost text-xl">Todos Table</a>
           </div>
           <div className="flex-none gap-2">
             <div className="form-control">
