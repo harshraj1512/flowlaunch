@@ -1,36 +1,18 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import "./Table.css";
 
 const Table = () => {
   const tableRef = useRef(null);
+  const [tableData, setTableData] = useState([]); 
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch("https://jsonplaceholder.typicode.com/todos");
         const data = await response.json();
-
-        // Initialize Tabulator
-        new Tabulator(tableRef.current, {
-          data, // Load fetched data
-          height: "400px", 
-          layout: "fitColumns", 
-          responsiveLayout: "collapse", 
-          columns: [
-            { title: "User ID", field: "userId", headerHozAlign: "center" },
-            { title: "ID", field: "id", headerHozAlign: "center" },
-            { title: "Title", field: "title", headerHozAlign: "center" },
-            {
-              title: "Completed",
-              field: "completed",
-              headerHozAlign: "center",
-              formatter: "tickCross", 
-            },
-          ],
-          movableColumns: false, 
-        });
+        setTableData(data); 
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -38,6 +20,29 @@ const Table = () => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (tableData.length > 0) {
+      new Tabulator(tableRef.current, {
+        data: tableData, // Use data from state
+        height: "400px",
+        layout: "fitColumns",
+        responsiveLayout: "collapse",
+        columns: [
+          { title: "User ID", field: "userId", headerHozAlign: "center" },
+          { title: "ID", field: "id", headerHozAlign: "center" },
+          { title: "Title", field: "title", headerHozAlign: "center" },
+          {
+            title: "Completed",
+            field: "completed",
+            headerHozAlign: "center",
+            formatter: "tickCross",
+          },
+        ],
+        movableColumns: false,
+      });
+    }
+  }, [tableData]);
 
   return (
     <div className="flex flex-col items-center justify-center w-full p-4 bg-white shadow rounded-lg">
