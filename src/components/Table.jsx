@@ -2,10 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { TabulatorFull as Tabulator } from "tabulator-tables";
 import "tabulator-tables/dist/css/tabulator.min.css";
 import "./Table.css";
+import NewTask from "./NewTask";
 
 const Table = () => {
   const tableRef = useRef(null);
-  const [tableData, setTableData] = useState([]); 
+  const [tableData, setTableData] = useState([]);
+  const [showPopup, setShowPopup] = useState(false);
 
   // Fetch initial data for the table
   useEffect(() => {
@@ -87,18 +89,28 @@ const Table = () => {
     }
   }, [tableData]);
 
+  // Add a new task
+  const addNewTask = (newTask) => {
+    setTableData((prevData) => [...prevData, newTask]);
+    setShowPopup(false);
+  };
+
 
   return (
     <div className="flex flex-col items-center justify-center w-full p-4 bg-white shadow rounded-lg">
       {/*  Header */}
+      <div className="flex justify-between items-center w-full">
       <h2 className="text-lg font-bold mb-4 text-center">Todos Table</h2>
-
+      <button onClick={() => setShowPopup(true)} className="px-2 py-1 rounded-lg bg-blue-600 text-white">New Task</button>
+      </div>
       {/* main Container */}
       <div
         ref={tableRef}
         className="w-full overflow-hidden table-container"
         style={{ maxHeight: "400px" }}
       ></div>
+
+      {showPopup && <NewTask onClose={() => setShowPopup(false)} onSubmit={addNewTask} />}
     </div>
   );
 };
