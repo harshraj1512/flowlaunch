@@ -1,0 +1,9 @@
+.table-container {
+    overflow-x: auto; 
+    scrollbar-width: none; 
+  }
+  
+  .table-container::-webkit-scrollbar {
+    display: none; 
+  }
+  
