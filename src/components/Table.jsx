@@ -4,6 +4,7 @@ import "tabulator-tables/dist/css/tabulator.min.css";
 import "./Table.css";
 import NewTask from "./NewTask";
 import { LayoutList } from "lucide-react";
+import toast from "react-hot-toast";
 
 const Table = () => {
   const tableRef = useRef(null);
@@ -12,10 +13,12 @@ const Table = () => {
   const [showPopup, setShowPopup] = useState(false); // form popup
   const [statusFilter, setStatusFilter] = useState("All"); // Status filter
   const [search, setSearch] = useState(""); // search
+  const [loading, setLoading] = useState(true); //loading
 
   // Fetch
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const response = await fetch(
           "https://jsonplaceholder.typicode.com/todos?_limit=20"
@@ -32,8 +35,11 @@ const Table = () => {
 
         setTableData(enhancedData);
         setFilteredData(enhancedData);
+        toast.success("Table Data Success")
       } catch (error) {
-        console.error("Error fetching data:", error);
+        toast.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);  
       }
     };
 
@@ -88,9 +94,11 @@ const Table = () => {
             cellClick: (e, cell) => {
               // Remove task
               const taskIdToDelete = cell.getRow().getData().taskId;
-              setFilteredData((prevData) =>
-                prevData.filter((task) => task.taskId !== taskIdToDelete)
-              );
+              setFilteredData((prevData) => {
+                const updated = prevData.filter((task) => task.taskId !== taskIdToDelete);
+                toast.success("Data deleted successfully");
+                return updated;
+              });
             },
           },
         ],
@@ -108,6 +116,7 @@ const Table = () => {
   const addNewTask = (newTask) => {
     setFilteredData((prevData) => [...prevData, newTask]);
     setShowPopup(false);
+    toast.success("updated")
   };
 
   // Handle filter
@@ -217,11 +226,18 @@ const Table = () => {
         </div>
       </div>
       {/* main Container */}
-      <div
+      {loading ? (
+        <div className="flex justify-center items-center h-[90%]">
+        <div className="animate-spin w-8 h-8 border-4 border-t-sky-500 border-gray-200 rounded-full"></div>
+      </div>
+      ) : (
+        <div
         ref={tableRef}
         className="w-full overflow-hidden table-container"
         style={{ maxHeight: "400px" }}
       ></div>
+      )}
+      
 
       {showPopup && (
         <NewTask

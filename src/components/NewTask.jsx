@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import toast from "react-hot-toast";
 
 const NewTask = ({ onClose, onSubmit, existing }) => {
   const [title, setTitle] = useState("");
@@ -7,7 +8,7 @@ const NewTask = ({ onClose, onSubmit, existing }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!title || !description) return alert("Title and Description are required!");
+    if (!title || !description) return toast.error("Title and Description are required!");
 
     
     const taskId = existing.length + 1; // Total tasks + 1
