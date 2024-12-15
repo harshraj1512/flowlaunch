@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const NewTask = ({ onClose, onSubmit, existingTasks }) => {
+const NewTask = ({ onClose, onSubmit, existing }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("To Do");
@@ -10,7 +10,7 @@ const NewTask = ({ onClose, onSubmit, existingTasks }) => {
     if (!title || !description) return alert("Title and Description are required!");
 
     
-    const taskId = existingTasks.length + 1; // Total tasks + 1
+    const taskId = existing.length + 1; // Total tasks + 1
 
     const newTask = {
       taskId,

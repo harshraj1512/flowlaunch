@@ -9,8 +9,9 @@ const Table = () => {
   const tableRef = useRef(null);
   const [tableData, setTableData] = useState([]); // initial
   const [filteredData, setFilteredData] = useState([]); // filtered data
-  const [showPopup, setShowPopup] = useState(false);
+  const [showPopup, setShowPopup] = useState(false); // form popup
   const [statusFilter, setStatusFilter] = useState("All"); // Status filter
+  const [search, setSearch] = useState(""); // search
 
   // Fetch
   useEffect(() => {
@@ -87,7 +88,7 @@ const Table = () => {
             cellClick: (e, cell) => {
               // Remove task
               const taskIdToDelete = cell.getRow().getData().taskId;
-              setTableData((prevData) =>
+              setFilteredData((prevData) =>
                 prevData.filter((task) => task.taskId !== taskIdToDelete)
               );
             },
@@ -110,7 +111,7 @@ const Table = () => {
   };
 
   // Handle filter
-  const handleStatusFilterChange = (event) => {
+  const handleFilterChange = (event) => {
     const selectedStatus = event.target.value;
     setStatusFilter(selectedStatus);
 
@@ -125,6 +126,22 @@ const Table = () => {
     }
   };
 
+  //Handle Search
+  const handleSearch = (event) => {
+    const searchWord = event.target.value.toLowerCase();
+    setSearch(searchWord);
+
+    // Filter table 
+    if (search === "") {
+      setFilteredData(tableData);
+    } else {
+      const filtered = tableData.filter((task) =>
+        task.title.toLowerCase().includes(search)
+      );
+      setFilteredData(filtered);
+    }
+  };
+
   // Counts
   const getStatusCount = (status) => {
     return tableData.filter((task) => task.status === status).length;
@@ -133,8 +150,16 @@ const Table = () => {
   return (
     <div className="flex flex-col items-center justify-center w-full p-4 bg-white shadow rounded-lg">
       {/*  Header */}
-      <div className="flex justify-between items-center w-full">
-        <h2 className="text-lg font-bold mb-4 text-center">Todos Table</h2>
+      <div className="flex justify-between items-center w-full mb-5">
+        <div>
+        <input
+            type="search"
+            placeholder="Search by title"
+            value={search}
+            onChange={handleSearch}
+            className="p-2 border border-stone-300 rounded-md text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
         <div className="flex gap-4">
           <div className="flex space-x-4">
             <button className="flex gap-2 text-center items-center bg-white text-black text-sm font-normal px-3 py-2 rounded-[100px] border border-stone-300">
@@ -167,7 +192,7 @@ const Table = () => {
           </div>
           <select
             value={statusFilter}
-            onChange={handleStatusFilterChange}
+            onChange={handleFilterChange}
             className="p-2 border border-stone-300 bg-white text-black text-xs font-normal rounded-[100px] ml-2"
           >
             <option value="All" className="bg-white rounded-2xl">
@@ -202,7 +227,7 @@ const Table = () => {
         <NewTask
           onClose={() => setShowPopup(false)}
           onSubmit={addNewTask}
-          existingTasks={tableData}
+          existing={tableData}
         />
       )}
     </div>
